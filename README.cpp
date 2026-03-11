@@ -1,6 +1,9 @@
 #include <iostream>
 #include <Windows.h>
 
+CRITICAL_SECTION cs;
+HANDLE events = CreateEventA(NULL, NULL, NULL, "event");
+
 struct Player {
 public:
     long health = 500000;
@@ -50,7 +53,9 @@ void Logic() {
     Bayum boss = Bayum();
     do {
 
-
+        std::cout << "" << std::endl;
+        std::cout << "" << std::endl;
+        std::cout << "" << std::endl;
 
     } while (boss.health != 0);
 }
@@ -80,24 +85,30 @@ bool Menu() {
         }
         case '2': 
         {
-            std::cout << "Задайте имя персонажа" << std::endl;
-            char Name[64];
-            std::cin.getline(Name, 64);
-            players[count] = Player();
-            for (int i = 0; i < 64; i++)
-            {
-                if(Name[i] != '\0')
-                    players[count].name[i] = Name[i];
-            }
-            std::cin.ignore();
-            playersThread[count] = CreateThread(NULL, 0, NULL, NULL, NULL, NULL);
-            if (playersThread[count] == NULL) {
-                std::cout << "Ошибка" << std::endl;
+            if (SIZE != 10) {
+                std::cout << "Задайте имя персонажа" << std::endl;
+                char Name[64];
+                std::cin.getline(Name, 64);
+                players[count] = Player();
+                for (int i = 0; i < 64; i++)
+                {
+                    if (Name[i] != '\0')
+                        players[count].name[i] = Name[i];
+                }
+                std::cin.ignore();
+                playersThread[count] = CreateThread(NULL, 0, NULL, NULL, NULL, NULL);
+                if (playersThread[count] == NULL) {
+                    std::cout << "Ошибка" << std::endl;
+                    break;
+                }
+                count++;
+                std::cout << "Персонаж добавлен" << std::endl;
                 break;
             }
-            count++;
-            std::cout << "Персонаж добавлен" << std::endl;
-            break;
+            else {
+                std::cout << "Достигнут лимит по персонажам" << std::endl;
+                break;
+            }
 
         }
         case '3':
