@@ -42,6 +42,7 @@ public:
 const int SIZE = 10;
 int count = 1;
 Player players[SIZE];
+HANDLE playersThread[SIZE];
 
 
 
@@ -89,6 +90,12 @@ bool Menu() {
                     players[count].name[i] = Name[i];
             }
             std::cin.ignore();
+            playersThread[count] = CreateThread(NULL, 0, NULL, NULL, NULL, NULL);
+            if (playersThread[count] == NULL) {
+                std::cout << "Ошибка" << std::endl;
+                break;
+            }
+            count++;
             std::cout << "Персонаж добавлен" << std::endl;
             break;
 
