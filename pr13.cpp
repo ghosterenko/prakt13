@@ -3,6 +3,10 @@
 
 CRITICAL_SECTION cs;
 HANDLE events = CreateEventA(NULL, NULL, NULL, "event");
+const int SIZE = 10;
+int count = 1;
+HANDLE playersThread[SIZE];
+HANDLE bossThread;
 
 struct Player {
 public:
@@ -14,6 +18,13 @@ public:
     int defense = 20;
     int dodgeChanse = 15;
     char name[64];
+
+    Player() {
+        playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, NULL, NULL);
+        if (playersThread[count] == NULL) {
+            std::cout << "Ошибка" << std::endl;
+        }
+    }
 };
 
 struct Bayum {
@@ -25,6 +36,13 @@ struct Bayum {
     int specialCooldown = 10;
 
 public:
+    Bayum() {
+        bossThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightBoss, NULL, 0, NULL);
+        if (bossThread == NULL) {
+            std::cout << "Ошибка" << std::endl;
+        }
+    }
+
     void BossDefultAttack(Player player) {
         player.health -= this->damage;
     }
@@ -42,23 +60,41 @@ public:
         this->health -= damage;
     }
 };
-const int SIZE = 10;
-int count = 1;
+
 Player players[SIZE];
-HANDLE playersThread[SIZE];
+
+DWORD WINAPI FightPlayer(Bayum boss) {
+    srand(time(NULL));
 
 
+}
+DWORD WINAPI FightBoss(Bayum boss) {
+    srand(time(NULL));
+    int hit = rand() % 5;
+    switch (hit) {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    {
+        break;
+    }
+    case 5: 
+    {
+        break;
+    }
+    }
+
+}
 
 void Logic() {
     Bayum boss = Bayum();
     do {
-
-        std::cout << "" << std::endl;
-        std::cout << "" << std::endl;
-        std::cout << "" << std::endl;
+        
 
     } while (boss.health != 0);
 }
+
 
 bool Menu() {
     char m;
@@ -83,7 +119,7 @@ bool Menu() {
             Logic();
             break;
         }
-        case '2': 
+        case '2':
         {
             if (SIZE != 10) {
                 std::cout << "Задайте имя персонажа" << std::endl;
@@ -96,11 +132,7 @@ bool Menu() {
                         players[count].name[i] = Name[i];
                 }
                 std::cin.ignore();
-                playersThread[count] = CreateThread(NULL, 0, NULL, NULL, NULL, NULL);
-                if (playersThread[count] == NULL) {
-                    std::cout << "Ошибка" << std::endl;
-                    break;
-                }
+                
                 count++;
                 std::cout << "Персонаж добавлен" << std::endl;
                 break;
