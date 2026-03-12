@@ -70,6 +70,7 @@ DWORD WINAPI FightPlayer(Bayum boss) {
 }
 DWORD WINAPI FightBoss(Bayum boss) {
     srand(time(NULL));
+    EnterCriticalSection(&cs);
     int hit = rand() % 5;
     switch (hit) {
     case 1:
@@ -77,10 +78,11 @@ DWORD WINAPI FightBoss(Bayum boss) {
     case 3:
     case 4:
     {
+        
         int playerid = rand() % count;
         boss.BossDefultAttack(players[playerid]);
         std::cout << "Босс ударил игрока " << players[playerid].name << "- текущее здоровье " << players[playerid].health << std::endl;
-        Sleep(100);
+        
         break;
     }
     case 5: 
@@ -93,6 +95,7 @@ DWORD WINAPI FightBoss(Bayum boss) {
         }
         break;
     }
+    LeaveCriticalSection(&cs);
     }
 
 }
@@ -172,9 +175,11 @@ bool Menu() {
 int main()
 {
     setlocale(LC_ALL, "ru");
+    InitializeCriticalSection(&cs);
     bool f = true;
     while (f)
     {
         f = Menu();
     }
+    DeleteCriticalSection(&cs);
 }
