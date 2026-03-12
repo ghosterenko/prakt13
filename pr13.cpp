@@ -13,7 +13,12 @@ std::string namePlayer[] = {
     "Алекс",
     "Стив",
     "Альф",
-    "Бета"
+    "Бета",
+    "Волк",
+    "Лис",
+    "Зебра",
+    "Борис",
+    "Геральд"
 };
 
 struct Player {
@@ -25,10 +30,10 @@ public:
     int specialCooldown = 5;
     int defense = 20;
     int dodgeChanse = 15;
-    char name[64];
+    std::string name;
 
     Player() {
-        
+        name = namePlayer[count];
 
         playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, NULL, NULL);
         if (playersThread[count] == NULL) {
@@ -123,7 +128,6 @@ void start() {
     for (int i = 0; i < count; i++)
     {
         players[i] = Player();
-        
     }
     while (true)
     {
