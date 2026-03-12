@@ -28,6 +28,8 @@ public:
     char name[64];
 
     Player() {
+        
+
         playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, NULL, NULL);
         if (playersThread[count] == NULL) {
             std::cout << "Ошибка" << std::endl;
@@ -118,6 +120,11 @@ DWORD WINAPI FightBoss(Bayum boss) {
 
 void start() {
     Bayum boss = Bayum();
+    for (int i = 0; i < count; i++)
+    {
+        players[i] = Player();
+        
+    }
     while (true)
     {
 
@@ -160,25 +167,6 @@ bool Menu() {
             }
             else {
                 std::cout << "Успешно" << std::endl;
-            }
-            if (SIZE != 10) {
-                std::cout << "Задайте имя персонажа" << std::endl;
-                char Name[64];
-                std::cin.getline(Name, 64);
-                players[count] = Player();
-                for (int i = 0; i < 64; i++)
-                {
-                    if (Name[i] != '\0')
-                        players[count].name[i] = Name[i];
-                }
-                std::cin.ignore();
-                
-                count++;
-                std::cout << "Персонаж добавлен" << std::endl;
-                break;
-            }
-            else {
-                std::cout << "Достигнут лимит по персонажам" << std::endl;
                 break;
             }
 
