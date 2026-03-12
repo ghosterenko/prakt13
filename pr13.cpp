@@ -51,7 +51,7 @@ public:
         {
             if (COUNT > 1) {
                 int damage = this->specialDamage * (1 - 0.05) * (COUNT - 1);
-                players[i].damage -= damage;
+                players[i].health -= damage;
             }
         }
     }
@@ -77,10 +77,20 @@ DWORD WINAPI FightBoss(Bayum boss) {
     case 3:
     case 4:
     {
+        int playerid = rand() % count;
+        boss.BossDefultAttack(players[playerid]);
+        std::cout << "Босс ударил игрока " << players[playerid].name << "- текущее здоровье " << players[playerid].health << std::endl;
+        Sleep(100);
         break;
     }
     case 5: 
     {
+        boss.BossSpecialAttack(players, SIZE);
+        std::cout << "Спец атака босса, всем игрокам нанесен урон - текущее хп игроков:" << std::endl;
+        for (int i = 0; i < count; i++)
+        {
+            std::cout << players[i].name << " " << players[i].health << std::endl;
+        }
         break;
     }
     }
@@ -89,6 +99,7 @@ DWORD WINAPI FightBoss(Bayum boss) {
 
 void Logic() {
     Bayum boss = Bayum();
+
     do {
         
 
@@ -160,6 +171,7 @@ bool Menu() {
 
 int main()
 {
+    setlocale(LC_ALL, "ru");
     bool f = true;
     while (f)
     {
