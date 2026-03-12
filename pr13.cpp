@@ -1,5 +1,6 @@
 #include <iostream>
 #include <Windows.h>
+#include <string>
 
 CRITICAL_SECTION cs;
 HANDLE events = CreateEventA(NULL, NULL, NULL, "event");
@@ -7,6 +8,13 @@ const int SIZE = 10;
 int count = 1;
 HANDLE playersThread[SIZE];
 HANDLE bossThread;
+std::string namePlayer[] = {
+    "боб",
+    "Алекс",
+    "Стив",
+    "Альф",
+    "Бета"
+};
 
 struct Player {
 public:
@@ -65,11 +73,18 @@ Player players[SIZE];
 
 DWORD WINAPI FightPlayer(Bayum boss) {
     srand(time(NULL));
+    do {
+        EnterCriticalSection(&cs);
 
+        LeaveCriticalSection(&cs);
+
+    } while (boss.health != 0);
 
 }
 DWORD WINAPI FightBoss(Bayum boss) {
     srand(time(NULL));
+    do {
+
     EnterCriticalSection(&cs);
     int hit = rand() % 5;
     switch (hit) {
@@ -97,16 +112,17 @@ DWORD WINAPI FightBoss(Bayum boss) {
     }
     LeaveCriticalSection(&cs);
     }
+    } while (boss.health != 0);
 
 }
 
-void Logic() {
+void start() {
     Bayum boss = Bayum();
+    while (true)
+    {
 
-    do {
-        
-
-    } while (boss.health != 0);
+    }
+    
 }
 
 
@@ -130,11 +146,21 @@ bool Menu() {
         {
         case '1':
         {
-            Logic();
+            start();
             break;
         }
         case '2':
         {
+            std::cout << "Введите количество игроков до 10" << std::endl;
+            std::cin >> count;
+            std::cin.ignore();
+            if (count > 10) {
+                std::cout << "Количество игроков не должно привышать 10" << std::endl;
+                break;
+            }
+            else {
+                std::cout << "Успешно" << std::endl;
+            }
             if (SIZE != 10) {
                 std::cout << "Задайте имя персонажа" << std::endl;
                 char Name[64];
