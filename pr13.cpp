@@ -3,11 +3,13 @@
 #include <string>
 
 CRITICAL_SECTION cs;
-HANDLE events = CreateEventA(NULL, NULL, NULL, "event");
-const int SIZE = 10;
-int count = 1;
-HANDLE playersThread[SIZE];
+const int COUNTS = 10;
+int count = 0;
+HANDLE playersThread[COUNTS];
+DWORD playersThreadID[COUNTS];
 HANDLE bossThread;
+DWORD bossThreadId;
+
 std::string namePlayer[] = {
     "боб",
     "Алекс",
@@ -21,6 +23,9 @@ std::string namePlayer[] = {
     "Геральд"
 };
 
+VOID WINAPI FightPlayer();
+VOID WINAPI FightBoss();
+
 struct Player {
 public:
     long health = 500000;
@@ -32,93 +37,75 @@ public:
     int dodgeChanse = 15;
     std::string name;
 
-    Player() {
-        name = namePlayer[count];
-
-        playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, NULL, NULL);
-        if (playersThread[count] == NULL) {
-            std::cout << "Ошибка" << std::endl;
-        }
-    }
 };
 
 struct Bayum {
+public:
     long health = 900000000000;
     int resist = 44;
     int damage = 73843;
     int specialDamage = 150000;
     int attackCooldown = 5;
     int specialCooldown = 10;
-
-public:
-    Bayum() {
-        bossThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightBoss, NULL, 0, NULL);
-        if (bossThread == NULL) {
-            std::cout << "Ошибка" << std::endl;
-        }
-    }
-
-    void BossDefultAttack(Player player) {
-        player.health -= this->damage;
-    }
-    void BossSpecialAttack(Player* players, const int COUNT) {
-        for (int i = 0; i < COUNT; i++)
-        {
-            if (COUNT > 1) {
-                int damage = this->specialDamage * (1 - 0.05) * (COUNT - 1);
-                players[i].health -= damage;
-            }
-        }
-    }
+    
     void PlayerAttack(Player player) {
-        int damage = player.damage * (100 - this->resist) / 100;
-        this->health -= damage;
+        int damage = player.damage * (100 - resist) / 100;
+        health -= damage;
     }
 };
+Bayum boss = Bayum();
+Player players[COUNTS];
 
-Player players[SIZE];
-
-DWORD WINAPI FightPlayer(Bayum boss) {
+VOID WINAPI FightPlayer() {
     srand(time(NULL));
     do {
+        Sleep(200);
         EnterCriticalSection(&cs);
 
+        Sleep(1000);
         LeaveCriticalSection(&cs);
 
     } while (boss.health != 0);
-
+    
 }
-DWORD WINAPI FightBoss(Bayum boss) {
+VOID WINAPI FightBoss() {
     srand(time(NULL));
     do {
-
-    EnterCriticalSection(&cs);
-    int hit = rand() % 5;
-    switch (hit) {
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    {
-        
-        int playerid = rand() % count;
-        boss.BossDefultAttack(players[playerid]);
-        std::cout << "Босс ударил игрока " << players[playerid].name << "- текущее здоровье " << players[playerid].health << std::endl;
-        
-        break;
-    }
-    case 5: 
-    {
-        boss.BossSpecialAttack(players, SIZE);
-        std::cout << "Спец атака босса, всем игрокам нанесен урон - текущее хп игроков:" << std::endl;
-        for (int i = 0; i < count; i++)
+        Sleep(200);
+        EnterCriticalSection(&cs);
+        int hit = rand() % 5;
+        switch (hit) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
         {
-            std::cout << players[i].name << " " << players[i].health << std::endl;
+
+            int playerid = rand() % count;
+            players[playerid].health -= boss.damage;
+            std::cout << playerid << "Босс ударил игрока " << players[playerid].name << " - текущее здоровье " << players[playerid].health << std::endl;
+            Sleep(1000);
+            break;
         }
-        break;
-    }
-    LeaveCriticalSection(&cs);
-    }
+        case 5:
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (count > 1) {
+                    int damage = boss.specialDamage * (1 - 0.05) * (count - 1);
+                    players[i].health -= damage;
+                }
+            }
+            std::cout << "Спец атака босса, всем игрокам нанесен урон - текущее хп игроков:" << std::endl;
+            for (int i = 0; i < count; i++)
+            {
+                std::cout << players[i].name << " " << players[i].health << std::endl;
+            }
+            Sleep(1000);
+            break;
+        }
+        LeaveCriticalSection(&cs);
+        }
     } while (boss.health != 0);
 
 }
@@ -128,12 +115,21 @@ void start() {
     for (int i = 0; i < count; i++)
     {
         players[i] = Player();
+        players[i].name = namePlayer[i];
+        playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, 0, &playersThreadID[count]);
+        if (playersThread[count] == NULL) {
+            std::cout << "Ошибка" << std::endl;
+        }
     }
-    while (true)
-    {
+    bossThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightBoss, NULL, 0, &bossThreadId);
+    if (bossThread == NULL) {
+        std::cout << "Ошибка" << std::endl;
+    }
 
-    }
-    
+    WaitForSingleObject(bossThread, INFINITE);
+    WaitForMultipleObjects(count, playersThread, TRUE, INFINITE);
+    CloseHandle(bossThread);
+    CloseHandle(playersThread);
 }
 
 
