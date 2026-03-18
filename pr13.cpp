@@ -81,7 +81,7 @@ VOID WINAPI FightBoss() {
         case 4:
         {
 
-            int playerid = rand() % count;
+            int playerid = (rand() % count) + 1;
             players[playerid].health -= boss.damage;
             std::cout << playerid << "Босс ударил игрока " << players[playerid].name << " - текущее здоровье " << players[playerid].health << std::endl;
             Sleep(1000);
