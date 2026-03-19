@@ -47,7 +47,7 @@ public:
     int specialDamage = 150000;
     int attackCooldown = 5;
     int specialCooldown = 10;
-    
+
     void PlayerAttack(Player player) {
         int damage = player.damage * (100 - resist) / 100;
         health -= damage;
@@ -61,12 +61,24 @@ VOID WINAPI FightPlayer() {
     do {
         Sleep(200);
         EnterCriticalSection(&cs);
-
+        for (int i = 0; i < count; i++)
+        {
+            if (players[i].health <= 0) {
+                std::cout << "Игрок " << players[i].name << "погиб" << std::endl;
+                count--;
+            }
+        }
+        if (count == 0) {
+            std::cout << "Все игроки погибли. Игра окончена" << std::endl;
+        }
+        if(boss.health <= 0) {
+            std::cout << "Босс повержен. Игра окончена" << std::endl;
+        }
         Sleep(1000);
         LeaveCriticalSection(&cs);
 
-    } while (boss.health != 0);
-    
+    } while (boss.health != 0 || count != 0);
+
 }
 VOID WINAPI FightBoss() {
     srand(time(NULL));
@@ -81,9 +93,9 @@ VOID WINAPI FightBoss() {
         case 4:
         {
 
-            int playerid = (rand() % count) + 1;
+            int playerid = rand() % count;
             players[playerid].health -= boss.damage;
-            std::cout << playerid << "Босс ударил игрока " << players[playerid].name << " - текущее здоровье " << players[playerid].health << std::endl;
+            std::cout << "Босс ударил игрока " << players[playerid].name << " - текущее здоровье " << players[playerid].health << std::endl;
             Sleep(1000);
             break;
         }
@@ -104,9 +116,22 @@ VOID WINAPI FightBoss() {
             Sleep(1000);
             break;
         }
+        for (int i = 0; i < count; i++)
+        {
+            if (players[i].health <= 0) {
+                std::cout << "Игрок " << players[i].name << "погиб" << std::endl;
+                count--;
+            }
+        }
+        if (count == 0) {
+            std::cout << "Все игроки погибли. Игра окончена" << std::endl;
+        }
+        if(boss.health <= 0) {
+            std::cout << "Босс повержен. Игра окончена" << std::endl;
+        }
         LeaveCriticalSection(&cs);
         }
-    } while (boss.health != 0);
+    } while (boss.health <= 0 || count != 0);
 
 }
 
