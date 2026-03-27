@@ -54,29 +54,13 @@ Player players[COUNTS];
 VOID WINAPI FightPlayer() {
     srand(time(NULL));
     while (true) {
-        Sleep(200);
-        for (int i = 0; i < count; i++)
-        {
-            if (players[i].health <= 0) {
-                std::cout << "Игрок " << players[i].name << "погиб" << std::endl;
-                count--;
-            }
-        }
-        if (count == 0) {
-            std::cout << "Все игроки погибли. Игра окончена" << std::endl;
-            break;
-        }
-        if (boss.health <= 0) {
-            std::cout << "Босс повержен. Игра окончена" << std::endl;
-            break;
-        }
         Sleep(1000);
 
     } 
 }
 VOID WINAPI FightBoss() {
     srand(time(NULL));
-    do {
+    while(true) {
         Sleep(200);
         int hit = rand() % 5;
         switch (hit) {
@@ -109,21 +93,10 @@ VOID WINAPI FightBoss() {
             Sleep(1000);
             break;
         }
-        for (int i = 0; i < count; i++)
-        {
-            if (players[i].health <= 0) {
-                std::cout << "Игрок " << players[i].name << "погиб" << std::endl;
-                count--;
-            }
+
         }
-        if (count == 0) {
-            std::cout << "Все игроки погибли. Игра окончена" << std::endl;
-        }
-        if (boss.health <= 0) {
-            std::cout << "Босс повержен. Игра окончена" << std::endl;
-        }
-        }
-    } while (boss.health <= 0 || count != 0);
+        
+    }
 
 }
 
