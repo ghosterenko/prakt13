@@ -2,14 +2,6 @@
 #include <Windows.h>
 #include <string>
 
-const int COUNTS = 10;
-int count = 0;
-
-HANDLE playersThread[COUNTS];
-DWORD playersThreadID[COUNTS];
-HANDLE bossThread;
-DWORD bossThreadId;
-
 std::string namePlayer[] = {
     "ББоб",
     "Алекс",
@@ -22,9 +14,6 @@ std::string namePlayer[] = {
     "Борис",
     "Геральд"
 };
-
-VOID WINAPI FightPlayer();
-VOID WINAPI FightBoss();
 
 struct Player {
 public:
@@ -53,6 +42,13 @@ public:
         health -= damage;
     }
 };
+const int COUNTS = 10;
+int count = 0;
+
+HANDLE playersThread[COUNTS];
+DWORD playersThreadID[COUNTS];
+HANDLE bossThread;
+DWORD bossThreadId;
 Bayum boss = Bayum();
 Player players[COUNTS];
 
@@ -132,7 +128,7 @@ VOID WINAPI FightBoss() {
 }
 
 void start() {
-    Bayum boss = Bayum();
+    Bayum boss = Bayum(); 
     for (int i = 0; i < count; i++)
     {
         players[i] = Player();
@@ -164,5 +160,6 @@ int main()
     }
     else {
         std::cout << "Успешно" << std::endl;
+        start();
     }
 }
