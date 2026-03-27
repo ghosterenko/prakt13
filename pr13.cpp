@@ -2,16 +2,16 @@
 #include <Windows.h>
 #include <string>
 
-CRITICAL_SECTION cs;
 const int COUNTS = 10;
 int count = 0;
+
 HANDLE playersThread[COUNTS];
 DWORD playersThreadID[COUNTS];
 HANDLE bossThread;
 DWORD bossThreadId;
 
 std::string namePlayer[] = {
-    "боб",
+    "ББоб",
     "Алекс",
     "Стив",
     "Альф",
@@ -60,7 +60,6 @@ VOID WINAPI FightPlayer() {
     srand(time(NULL));
     do {
         Sleep(200);
-        EnterCriticalSection(&cs);
         for (int i = 0; i < count; i++)
         {
             if (players[i].health <= 0) {
@@ -71,11 +70,10 @@ VOID WINAPI FightPlayer() {
         if (count == 0) {
             std::cout << "Все игроки погибли. Игра окончена" << std::endl;
         }
-        if(boss.health <= 0) {
+        if (boss.health <= 0) {
             std::cout << "Босс повержен. Игра окончена" << std::endl;
         }
         Sleep(1000);
-        LeaveCriticalSection(&cs);
 
     } while (boss.health != 0 || count != 0);
 
@@ -84,7 +82,6 @@ VOID WINAPI FightBoss() {
     srand(time(NULL));
     do {
         Sleep(200);
-        EnterCriticalSection(&cs);
         int hit = rand() % 5;
         switch (hit) {
         case 1:
@@ -126,10 +123,9 @@ VOID WINAPI FightBoss() {
         if (count == 0) {
             std::cout << "Все игроки погибли. Игра окончена" << std::endl;
         }
-        if(boss.health <= 0) {
+        if (boss.health <= 0) {
             std::cout << "Босс повержен. Игра окончена" << std::endl;
         }
-        LeaveCriticalSection(&cs);
         }
     } while (boss.health <= 0 || count != 0);
 
@@ -159,66 +155,24 @@ void start() {
 
 
 bool Menu() {
-    char m;
-    std::cout << "1. Начать игру" << std::endl;
-    std::cout << "2. Выйти" << std::endl;
-    std::cin >> m;
+
+    std::cout << "Введите количество игроков до 10" << std::endl;
+    std::cin >> count;
     std::cin.ignore();
-    switch (m)
-    {
-    case '1':
-    {
-        char m2;
-        std::cout << "1. Начать бой" << std::endl;
-        std::cout << "2. Добавить игрока" << std::endl;
-        std::cout << "3. Выйти из игры" << std::endl;
-        std::cin >> m2;
-        std::cin.ignore();
-        switch (m2)
-        {
-        case '1':
-        {
-            start();
-            break;
-        }
-        case '2':
-        {
-            std::cout << "Введите количество игроков до 10" << std::endl;
-            std::cin >> count;
-            std::cin.ignore();
-            if (count > 10) {
-                std::cout << "Количество игроков не должно привышать 10" << std::endl;
-                break;
-            }
-            else {
-                std::cout << "Успешно" << std::endl;
-                break;
-            }
-
-        }
-        case '3':
-            return false;
-        default:
-            break;
-        }
-        break;
+    if (count > 10) {
+        std::cout << "Количество игроков не должно привышать 10" << std::endl;
     }
-    case '2':
-        return false;
-
-    default:
-        break;
+    else {
+        std::cout << "Успешно" << std::endl;
     }
 }
 
 int main()
 {
     setlocale(LC_ALL, "ru");
-    InitializeCriticalSection(&cs);
     bool f = true;
     while (f)
     {
         f = Menu();
     }
-    DeleteCriticalSection(&cs);
 }
