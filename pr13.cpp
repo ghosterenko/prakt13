@@ -46,15 +46,14 @@ const int COUNTS = 10;
 int count = 0;
 
 HANDLE playersThread[COUNTS];
-DWORD playersThreadID[COUNTS];
 HANDLE bossThread;
-DWORD bossThreadId;
+
 Bayum boss = Bayum();
 Player players[COUNTS];
 
 VOID WINAPI FightPlayer() {
     srand(time(NULL));
-    do {
+    while (true) {
         Sleep(200);
         for (int i = 0; i < count; i++)
         {
@@ -65,14 +64,15 @@ VOID WINAPI FightPlayer() {
         }
         if (count == 0) {
             std::cout << "Все игроки погибли. Игра окончена" << std::endl;
+            break;
         }
         if (boss.health <= 0) {
             std::cout << "Босс повержен. Игра окончена" << std::endl;
+            break;
         }
         Sleep(1000);
 
-    } while (boss.health != 0 || count != 0);
-
+    } 
 }
 VOID WINAPI FightBoss() {
     srand(time(NULL));
@@ -133,12 +133,12 @@ void start() {
     {
         players[i] = Player();
         players[i].name = namePlayer[i];
-        playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, 0, &playersThreadID[count]);
+        playersThread[count] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, 0, NULL);
         if (playersThread[count] == NULL) {
             std::cout << "Ошибка" << std::endl;
         }
     }
-    bossThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightBoss, NULL, 0, &bossThreadId);
+    bossThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightBoss, NULL, 0, NULL);
     if (bossThread == NULL) {
         std::cout << "Ошибка" << std::endl;
     }
