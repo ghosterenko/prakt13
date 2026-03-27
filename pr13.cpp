@@ -153,9 +153,9 @@ void start() {
     CloseHandle(playersThread);
 }
 
-
-bool Menu() {
-
+int main()
+{
+    setlocale(LC_ALL, "ru");
     std::cout << "Введите количество игроков до 10" << std::endl;
     std::cin >> count;
     std::cin.ignore();
@@ -164,15 +164,5 @@ bool Menu() {
     }
     else {
         std::cout << "Успешно" << std::endl;
-    }
-}
-
-int main()
-{
-    setlocale(LC_ALL, "ru");
-    bool f = true;
-    while (f)
-    {
-        f = Menu();
     }
 }
