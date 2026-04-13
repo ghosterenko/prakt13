@@ -62,7 +62,8 @@ void FightPlayer() {
 
         WaitForSingleObject(playerTurnEvent, INFINITE);
 
-        if (!gameRunning || !bossAlive || !players[playerId].isAlive) break;
+        if (!gameRunning || !bossAlive || !players[playerId].isAlive)
+            break;
 
         int currentTime = GetTickCount64() / 1000;
 
@@ -73,7 +74,7 @@ void FightPlayer() {
 
         bool useSpecial = (currentTime - lastSpecialTime >= players[playerId].specialCooldown);
 
-        long long damage = 0;
+        long damage = 0;
         if (useSpecial && players[playerId].specialDamage > 0) {
             damage = players[playerId].specialDamage;
             lastSpecialTime = currentTime;
@@ -86,7 +87,7 @@ void FightPlayer() {
             std::cout << players[playerId].name << " атакует " << damage << std::endl;
         }
 
-        long long realDamage = damage * (100 - boss.resist) / 100;
+        long realDamage = damage * (100 - boss.resist) / 100;
         boss.health -= realDamage;
         players[playerId].totalDamage += realDamage;
 
@@ -146,7 +147,7 @@ void FightBoss() {
                 if (players[i].isAlive) aliveCount++;
             }
 
-            long long totalDamage = boss.specialDamage;
+            long totalDamage = boss.specialDamage;
             if (aliveCount > 1) {
                 totalDamage = totalDamage * (100 - 5 * (aliveCount - 1)) / 100;
             }
@@ -160,7 +161,7 @@ void FightBoss() {
                         continue;
                     }
 
-                    long long damageTaken = totalDamage * (100 - players[i].defense) / 100;
+                    long damageTaken = totalDamage * (100 - players[i].defense) / 100;
                     players[i].health -= damageTaken;
 
                     std::cout << players[i].name << " -" << damageTaken << " хп - осталось " << players[i].health << std::endl;
@@ -192,7 +193,7 @@ void FightBoss() {
                     std::cout << "Босс атакует " << players[target].name << " - промах" << std::endl;
                 }
                 else {
-                    long long damageTaken = boss.damage * (100 - players[target].defense) / 100;
+                    long damageTaken = boss.damage * (100 - players[target].defense) / 100;
                     players[target].health -= damageTaken;
 
                     std::cout << "Босс атакует " << players[target].name << " -" << damageTaken << " хп - осталось " << players[target].health << std::endl;
@@ -251,7 +252,7 @@ void start() {
 
     std::cout << "Топ-3 по урону:" << std::endl;
 
-    long long tempDamage[10];
+    long tempDamage[10];
     std::string tempNames[10];
     for (int i = 0; i < playerCount; i++) {
         tempDamage[i] = players[i].totalDamage;
@@ -260,7 +261,7 @@ void start() {
 
     for (int top = 0; top < 3 && top < playerCount; top++) {
         int maxIndex = -1;
-        long long maxDamage = -1;
+        long maxDamage = -1;
 
         for (int i = 0; i < playerCount; i++) {
             if (tempDamage[i] > maxDamage) {
@@ -293,11 +294,9 @@ int main() {
 
     if (playerCount > 10) {
         std::cout << "Количество игроков не должно превышать 10" << std::endl;
-        return 1;
     }
     if (playerCount < 1) {
         std::cout << "Количество игроков должно быть больше 0" << std::endl;
-        return 1;
     }
 
     std::cout << "Успешно!" << std::endl;
