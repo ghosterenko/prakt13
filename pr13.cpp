@@ -36,11 +36,9 @@ struct Bayum {
 
 const int COUNTS = 10;
 int playerCount = 0;
-bool bossLife = true;
-bool game = true;
-bool Life = false;
+bool bossAlive = true;
+bool gameRunning = true;
 int currentPlayerId = 0;
-
 
 HANDLE playersThread[COUNTS];
 HANDLE bossThread;
@@ -57,9 +55,12 @@ void FightPlayer() {
     int lastAttackTime = 0;
     int lastSpecialTime = 0;
 
-    while (game && bossLife) {
+    while (gameRunning && bossAlive) {
 
         WaitForSingleObject(playerTurnEvent, INFINITE);
+
+        if (!gameRunning || !bossAlive)
+            break;
 
         int currentTime = GetTickCount64() / 1000;
 
@@ -68,44 +69,47 @@ void FightPlayer() {
             continue;
         }
 
-        int damage = 0;
+        long damage = 0;
         damage = players[playerId].damage;
         lastAttackTime = currentTime;
         std::cout << players[playerId].name << " атакует " << damage << std::endl;
 
-        int CDamage = damage * (100 - boss.resist) / 100;
-        boss.health -= CDamage;
+        long realDamage = damage * (100 - boss.resist) / 100;
+        boss.health -= realDamage;
 
         if (boss.health <= 0) {
-            bossLife = false;
+            bossAlive = false;
             std::cout << "Игроки победили" << std::endl;
-            game = false;
+            gameRunning = false;
             SetEvent(gameOverEvent);
             break;
         }
 
         SetEvent(bossEvent);
     }
-}
 
+}
 void FightBoss() {
     int lastAttackTime = 0;
     int lastSpecialTime = 0;
 
-    while (game && bossLife) {
+    while (gameRunning && bossAlive) {
 
         WaitForSingleObject(bossEvent, INFINITE);
-        
+
+        if (!bossAlive || !gameRunning) break;
+
+        bool aliveExists = false;
         for (int i = 0; i < playerCount; i++) {
             if (players[i].health <= 0) {
-                Life = true;
+                aliveExists = true;
                 break;
             }
         }
 
-        if (!Life) {
+        if (!aliveExists) {
             std::cout << "Босс победил" << std::endl;
-            game = false;
+            gameRunning = false;
             SetEvent(gameOverEvent);
             break;
         }
@@ -116,10 +120,18 @@ void FightBoss() {
             SetEvent(playerTurnEvent);
             continue;
         }
-        if (currentTime - lastSpecialTime >= boss.specialCooldown) {
+
+        bool useSpecial = (currentTime - lastSpecialTime >= boss.specialCooldown);
+
+        if (useSpecial) {
             lastSpecialTime = currentTime;
             lastAttackTime = currentTime;
 
+            int aliveCount = 0;
+            for (int i = 0; i < playerCount; i++) {
+                if (players[i].health > 0) 
+                    aliveCount++;
+            }
 
             long totalDamage = boss.specialDamage;
             if (aliveCount > 1) {
@@ -129,7 +141,7 @@ void FightBoss() {
             std::cout << "Босс: спецатака - урон " << totalDamage << std::endl;
 
             for (int i = 0; i < playerCount; i++) {
-                if (players[i].health >= 0) {
+                if (players[i].health > 0) {
                     if (rand() % 100 < players[i].dodgeChance) {
                         std::cout << players[i].name << " увернулся" << std::endl;
                         continue;
@@ -150,26 +162,26 @@ void FightBoss() {
         else {
             lastAttackTime = currentTime;
 
-            int lifeplayers[10];
-            int lifeCount = 0;
+            int alive[10];
+            int aliveCount = 0;
             for (int i = 0; i < playerCount; i++) {
-                if (players[i].health >= 0) {
-                    lifeplayers[lifeCount] = i;
-                    lifeCount++;
+                if (players[i].health > 0) {
+                    alive[aliveCount] = i;
+                    aliveCount++;
                 }
             }
 
-            if (lifeCount > 0) {
-                int target = lifeplayers[rand() % lifeCount];
+            if (aliveCount > 0) {
+                int target = alive[rand() % aliveCount];
 
                 if (rand() % 100 < players[target].dodgeChance) {
                     std::cout << "Босс атакует " << players[target].name << " - промах" << std::endl;
                 }
                 else {
-                    int damage = boss.damage * (100 - players[target].defense) / 100;
-                    players[target].health -= damage;
+                    long damageTaken = boss.damage * (100 - players[target].defense) / 100;
+                    players[target].health -= damageTaken;
 
-                    std::cout << "Босс атакует " << players[target].name << " -" << damage << " хп - осталось " << players[target].health << std::endl;
+                    std::cout << "Босс атакует " << players[target].name << " -" << damageTaken << " хп - осталось " << players[target].health << std::endl;
 
                     if (players[target].health <= 0) {
                         players[target].health = 0;
@@ -222,10 +234,10 @@ void start() {
 
     std::cout << "Топ-3 по урону:" << std::endl;
 
-    long Damage[10];
-    std::string Names[10];
+    long tempDamage[10];
+    std::string tempNames[10];
     for (int i = 0; i < playerCount; i++) {
-        Names[i] = players[i].name;
+        tempNames[i] = players[i].name;
     }
 
     for (int top = 0; top < 3 && top < playerCount; top++) {
@@ -233,17 +245,25 @@ void start() {
         long maxDamage = INT_MIN;
 
         for (int i = 0; i < playerCount; i++) {
-            if (Damage[i] > maxDamage) {
-                maxDamage = Damage[i];
+            if (tempDamage[i] > maxDamage) {
+                maxDamage = tempDamage[i];
                 maxIndex = i;
             }
         }
 
         if (maxIndex != -1) {
-            std::cout << top + 1 << ". " << Names[maxIndex] << " - " << Damage[maxIndex] << " урона" << std::endl;
-            Damage[maxIndex] = -1;
+            std::cout << top + 1 << ". " << tempNames[maxIndex] << " - " << tempDamage[maxIndex] << " урона" << std::endl;
+            tempDamage[maxIndex] = -1;
         }
     }
+
+    CloseHandle(bossThread);
+    for (int i = 0; i < playerCount; i++) {
+        CloseHandle(playersThread[i]);
+    }
+    CloseHandle(bossEvent);
+    CloseHandle(playerTurnEvent);
+    CloseHandle(gameOverEvent);
 }
 
 int main() {
@@ -262,13 +282,5 @@ int main() {
 
     std::cout << "Успешно!" << std::endl;
     start();
-
-    CloseHandle(bossThread);
-    for (int i = 0; i < playerCount; i++) {
-        CloseHandle(playersThread[i]);
-    }
-    CloseHandle(bossEvent);
-    CloseHandle(playerTurnEvent);
-    CloseHandle(gameOverEvent);
 
 }
