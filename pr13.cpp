@@ -69,10 +69,11 @@ void FightPlayer() {
         int damage = 0;
         damage = players[playerId].damage;
         lastAttackTime = currentTime;
-        std::cout << players[playerId].name << " атакует " << damage << std::endl;
 
         int realDamage = damage * (100 - boss.resist) / 100;
         boss.health -= realDamage;
+
+        std::cout << players[playerId].name << " атакует " << damage << "- хп босса: " << boss.health << std::endl;
 
         if (boss.health <= 0) {
             bossAlive = false;
