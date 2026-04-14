@@ -59,9 +59,6 @@ void FightPlayer() {
 
         WaitForSingleObject(playerTurnEvent, INFINITE);
 
-        if (!gameRunning || !bossAlive)
-            break;
-
         int currentTime = GetTickCount64() / 1000;
 
         if (currentTime - lastAttackTime < players[playerId].attackCooldown) {
@@ -97,8 +94,6 @@ void FightBoss() {
 
         WaitForSingleObject(bossEvent, INFINITE);
 
-        if (!bossAlive || !gameRunning) break;
-
         bool aliveExists = false;
         for (int i = 0; i < playerCount; i++) {
             if (players[i].health <= 0) {
@@ -121,9 +116,9 @@ void FightBoss() {
             continue;
         }
 
-        bool useSpecial = (currentTime - lastSpecialTime >= boss.specialCooldown);
+        bool Special = (currentTime - lastSpecialTime >= boss.specialCooldown);
 
-        if (useSpecial) {
+        if (Special) {
             lastSpecialTime = currentTime;
             lastAttackTime = currentTime;
 
@@ -221,6 +216,7 @@ void start() {
         playersThread[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightPlayer, NULL, 0, NULL);
         if (playersThread[i] == NULL) {
             std::cout << "Ошибка" << std::endl;
+            return;
         }
     }
 
