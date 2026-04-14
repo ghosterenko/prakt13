@@ -29,7 +29,7 @@ struct Player {
 };
 
 struct Bayum {
-    long long health = 500000;  // УМЕНЬШИЛ до 500к (было 9 млрд)
+    long long health = 500000;
     int resist = 44;
     int damage = 73843;
     int specialDamage = 150000;
