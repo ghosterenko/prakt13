@@ -38,8 +38,9 @@ const int COUNTS = 10;
 int playerCount = 0;
 bool bossLife = true;
 bool game = true;
-bool LifeExists = false;
+bool Life = false;
 int currentPlayerId = 0;
+
 
 HANDLE playersThread[COUNTS];
 HANDLE bossThread;
@@ -67,8 +68,6 @@ void FightPlayer() {
             continue;
         }
 
-        bool useSpecial = (currentTime - lastSpecialTime >= players[playerId].specialCooldown);
-
         int damage = 0;
         damage = players[playerId].damage;
         lastAttackTime = currentTime;
@@ -87,8 +86,8 @@ void FightPlayer() {
 
         SetEvent(bossEvent);
     }
-
 }
+
 void FightBoss() {
     int lastAttackTime = 0;
     int lastSpecialTime = 0;
@@ -99,12 +98,12 @@ void FightBoss() {
         
         for (int i = 0; i < playerCount; i++) {
             if (players[i].health <= 0) {
-                LifeExists = true;
+                Life = true;
                 break;
             }
         }
 
-        if (!LifeExists) {
+        if (!Life) {
             std::cout << "Босс победил" << std::endl;
             game = false;
             SetEvent(gameOverEvent);
@@ -117,18 +116,10 @@ void FightBoss() {
             SetEvent(playerTurnEvent);
             continue;
         }
-
-        bool useSpecial = (currentTime - lastSpecialTime >= boss.specialCooldown);
-
-        if (useSpecial) {
+        if (currentTime - lastSpecialTime >= boss.specialCooldown) {
             lastSpecialTime = currentTime;
             lastAttackTime = currentTime;
 
-            int aliveCount = 0;
-            for (int i = 0; i < playerCount; i++) {
-                if (players[i].isAlive) 
-                    aliveCount++;
-            }
 
             long totalDamage = boss.specialDamage;
             if (aliveCount > 1) {
@@ -138,7 +129,7 @@ void FightBoss() {
             std::cout << "Босс: спецатака - урон " << totalDamage << std::endl;
 
             for (int i = 0; i < playerCount; i++) {
-                if (players[i].isAlive) {
+                if (players[i].health >= 0) {
                     if (rand() % 100 < players[i].dodgeChance) {
                         std::cout << players[i].name << " увернулся" << std::endl;
                         continue;
@@ -159,26 +150,26 @@ void FightBoss() {
         else {
             lastAttackTime = currentTime;
 
-            int alive[10];
-            int aliveCount = 0;
+            int lifeplayers[10];
+            int lifeCount = 0;
             for (int i = 0; i < playerCount; i++) {
-                if (players[i].isAlive) {
-                    alive[aliveCount] = i;
-                    aliveCount++;
+                if (players[i].health >= 0) {
+                    lifeplayers[lifeCount] = i;
+                    lifeCount++;
                 }
             }
 
-            if (aliveCount > 0) {
-                int target = alive[rand() % aliveCount];
+            if (lifeCount > 0) {
+                int target = lifeplayers[rand() % lifeCount];
 
                 if (rand() % 100 < players[target].dodgeChance) {
                     std::cout << "Босс атакует " << players[target].name << " - промах" << std::endl;
                 }
                 else {
-                    long damageTaken = boss.damage * (100 - players[target].defense) / 100;
-                    players[target].health -= damageTaken;
+                    int damage = boss.damage * (100 - players[target].defense) / 100;
+                    players[target].health -= damage;
 
-                    std::cout << "Босс атакует " << players[target].name << " -" << damageTaken << " хп - осталось " << players[target].health << std::endl;
+                    std::cout << "Босс атакует " << players[target].name << " -" << damage << " хп - осталось " << players[target].health << std::endl;
 
                     if (players[target].health <= 0) {
                         players[target].health = 0;
