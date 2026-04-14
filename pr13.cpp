@@ -37,7 +37,7 @@ struct Bayum {
 const int COUNTS = 10;
 int playerCount = 0;
 bool bossAlive = true;
-bool gameRunning = true;
+bool game = true;
 int currentPlayerId = 0;
 
 HANDLE playersThread[COUNTS];
@@ -55,7 +55,7 @@ void FightPlayer() {
     int lastAttackTime = 0;
     int lastSpecialTime = 0;
 
-    while (gameRunning && bossAlive) {
+    while (game && bossAlive) {
 
         WaitForSingleObject(playerTurnEvent, INFINITE);
 
@@ -66,7 +66,7 @@ void FightPlayer() {
             continue;
         }
 
-        long damage = 0;
+        int damage = 0;
         damage = players[playerId].damage;
         lastAttackTime = currentTime;
         std::cout << players[playerId].name << " атакует " << damage << std::endl;
@@ -77,7 +77,7 @@ void FightPlayer() {
         if (boss.health <= 0) {
             bossAlive = false;
             std::cout << "Игроки победили" << std::endl;
-            gameRunning = false;
+            game = false;
             SetEvent(gameOverEvent);
             break;
         }
@@ -90,7 +90,7 @@ void FightBoss() {
     int lastAttackTime = 0;
     int lastSpecialTime = 0;
 
-    while (gameRunning && bossAlive) {
+    while (game && bossAlive) {
 
         WaitForSingleObject(bossEvent, INFINITE);
 
@@ -104,7 +104,7 @@ void FightBoss() {
 
         if (!aliveExists) {
             std::cout << "Босс победил" << std::endl;
-            gameRunning = false;
+            game = false;
             SetEvent(gameOverEvent);
             break;
         }
@@ -116,7 +116,7 @@ void FightBoss() {
             continue;
         }
 
-        bool Special = (currentTime - lastSpecialTime >= boss.specialCooldown);
+        bool Special = currentTime - lastSpecialTime >= boss.specialCooldown;
 
         if (Special) {
             lastSpecialTime = currentTime;
@@ -128,9 +128,9 @@ void FightBoss() {
                     aliveCount++;
             }
 
-            long totalDamage = boss.specialDamage;
+            int totalDamage = boss.specialDamage;
             if (aliveCount > 1) {
-                totalDamage = totalDamage * (100 - 5 * (aliveCount - 1)) / 100;
+                totalDamage = totalDamage * (100 - 5 * (playerCount - 1)) / 100;
             }
 
             std::cout << "Босс: спецатака - урон " << totalDamage << std::endl;
@@ -142,10 +142,10 @@ void FightBoss() {
                         continue;
                     }
 
-                    long damageTaken = totalDamage * (100 - players[i].defense) / 100;
-                    players[i].health -= damageTaken;
+                    int damage = totalDamage * (100 - players[i].defense) / 100;
+                    players[i].health -= damage;
 
-                    std::cout << players[i].name << " -" << damageTaken << " хп - осталось " << players[i].health << std::endl;
+                    std::cout << players[i].name << " -" << damage << " хп - осталось " << players[i].health << std::endl;
 
                     if (players[i].health <= 0) {
                         players[i].health = 0;
@@ -230,26 +230,26 @@ void start() {
 
     std::cout << "Топ-3 по урону:" << std::endl;
 
-    long tempDamage[10];
+    int tempDamage[10];
     std::string tempNames[10];
     for (int i = 0; i < playerCount; i++) {
         tempNames[i] = players[i].name;
     }
 
-    for (int top = 0; top < 3 && top < playerCount; top++) {
+    for (int i = 0; i < playerCount; i++) {
         int maxIndex = INT_MIN;
-        long maxDamage = INT_MIN;
+        int maxDamage = INT_MIN;
 
-        for (int i = 0; i < playerCount; i++) {
-            if (tempDamage[i] > maxDamage) {
-                maxDamage = tempDamage[i];
-                maxIndex = i;
+        for (int j = 0; j < playerCount; j++) {
+            if (tempDamage[j] > maxDamage) {
+                maxDamage = tempDamage[j];
+                maxIndex = j;
             }
         }
 
         if (maxIndex != -1) {
-            std::cout << top + 1 << ". " << tempNames[maxIndex] << " - " << tempDamage[maxIndex] << " урона" << std::endl;
-            tempDamage[maxIndex] = -1;
+            std::cout << i + 1 << ". " << tempNames[maxIndex] << " - " << tempDamage[maxIndex] << " урона" << std::endl;
+            tempDamage[maxIndex] = INT_MIN;
         }
     }
     CloseHandle(bossThread);
