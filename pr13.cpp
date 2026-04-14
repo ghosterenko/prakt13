@@ -1,6 +1,5 @@
 #include <iostream>
 #include <Windows.h>
-#include <string>
 
 std::string namePlayer[] = {
     "Боб",
@@ -16,7 +15,7 @@ std::string namePlayer[] = {
 };
 
 struct Player {
-    long long health = 500000;
+    long long health = 600000;
     int damage = 12000;
     int specialDamage = 30000;
     int attackCooldown = 2;
@@ -24,8 +23,6 @@ struct Player {
     int defense = 20;
     int dodgeChance = 15;
     std::string name;
-    long long totalDamage = 0;
-    bool isAlive = true;
 };
 
 struct Bayum {
@@ -58,11 +55,11 @@ void FightPlayer() {
     int lastAttackTime = 0;
     int lastSpecialTime = 0;
 
-    while (gameRunning && bossAlive && players[playerId].isAlive) {
+    while (gameRunning && bossAlive) {
 
         WaitForSingleObject(playerTurnEvent, INFINITE);
 
-        if (!gameRunning || !bossAlive || !players[playerId].isAlive)
+        if (!gameRunning || !bossAlive)
             break;
 
         int currentTime = GetTickCount64() / 1000;
@@ -75,22 +72,12 @@ void FightPlayer() {
         bool useSpecial = (currentTime - lastSpecialTime >= players[playerId].specialCooldown);
 
         long damage = 0;
-        if (useSpecial && players[playerId].specialDamage > 0) {
-            damage = players[playerId].specialDamage;
-            lastSpecialTime = currentTime;
-            lastAttackTime = currentTime;
-            std::cout << players[playerId].name << " спецатака " << damage << std::endl;
-        }
-        else {
-            damage = players[playerId].damage;
-            lastAttackTime = currentTime;
-            std::cout << players[playerId].name << " атакует " << damage << std::endl;
-        }
+        damage = players[playerId].damage;
+        lastAttackTime = currentTime;
+        std::cout << players[playerId].name << " атакует " << damage << std::endl;
 
         long realDamage = damage * (100 - boss.resist) / 100;
         boss.health -= realDamage;
-        players[playerId].totalDamage += realDamage;
-
 
         if (boss.health <= 0) {
             bossAlive = false;
@@ -169,7 +156,7 @@ void FightBoss() {
                     if (players[i].health <= 0) {
                         players[i].isAlive = false;
                         players[i].health = 0;
-                        std::cout << players[i].name << " погиб!" << std::endl;
+                        std::cout << players[i].name << " погиб" << std::endl;
                     }
                 }
             }
@@ -225,7 +212,7 @@ void start() {
         std::cout << "Игрок " << i + 1 << ": " << players[i].name << std::endl;
     }
 
-    std::cout << "Бой начался!" << std::endl;
+    std::cout << "Бой начался" << std::endl;
     std::cout << "Босс: " << boss.health << " хп" << std::endl;
 
     bossThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)FightBoss, NULL, 0, NULL);
