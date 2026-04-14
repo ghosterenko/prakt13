@@ -252,14 +252,6 @@ void start() {
             tempDamage[maxIndex] = -1;
         }
     }
-
-    CloseHandle(bossThread);
-    for (int i = 0; i < playerCount; i++) {
-        CloseHandle(playersThread[i]);
-    }
-    CloseHandle(bossEvent);
-    CloseHandle(playerTurnEvent);
-    CloseHandle(gameOverEvent);
 }
 
 int main() {
@@ -279,4 +271,11 @@ int main() {
     std::cout << "Успешно!" << std::endl;
     start();
 
+    CloseHandle(bossThread);
+    for (int i = 0; i < playerCount; i++) {
+        CloseHandle(playersThread[i]);
+    }
+    CloseHandle(bossEvent);
+    CloseHandle(playerTurnEvent);
+    CloseHandle(gameOverEvent);
 }
