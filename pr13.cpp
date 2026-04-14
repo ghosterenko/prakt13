@@ -69,13 +69,13 @@ void FightPlayer() {
 
         bool useSpecial = (currentTime - lastSpecialTime >= players[playerId].specialCooldown);
 
-        long damage = 0;
+        int damage = 0;
         damage = players[playerId].damage;
         lastAttackTime = currentTime;
         std::cout << players[playerId].name << " атакует " << damage << std::endl;
 
-        long realDamage = damage * (100 - boss.resist) / 100;
-        boss.health -= realDamage;
+        int CDamage = damage * (100 - boss.resist) / 100;
+        boss.health -= CDamage;
 
         if (boss.health <= 0) {
             bossLife = false;
